@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "326384577729",
+    "firebase_url": "https://uschool-f6685.firebaseio.com",
+    "project_id": "uschool-f6685",
+    "storage_bucket": "uschool-f6685.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:326384577729:android:66d30a8a98f71458",
+        "android_client_info": {
+          "package_name": "com.example.datvu.uschool"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "326384577729-5vm7e9lchq459e7ru0dguqt71vk07edr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.datvu.uschool",
+            "certificate_hash": "d0474f4f743c1fa16fd3be4091fe0f85e65e00e3"
+          }
+        },
+        {
+          "client_id": "326384577729-jnl3av0ijhj7m1d06q4akn3bbg370d3v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeGCogpAdZ8NM1zklQ3uoz0_DRqNA08pE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "326384577729-jnl3av0ijhj7m1d06q4akn3bbg370d3v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
