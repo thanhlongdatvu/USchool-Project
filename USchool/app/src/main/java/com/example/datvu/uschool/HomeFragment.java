@@ -8,14 +8,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.datvu.adapter.PostAdapter;
 import com.example.datvu.model.Post;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.StorageReference;
 
@@ -34,6 +37,8 @@ public class HomeFragment extends Fragment {
     PostAdapter postAdapter;
     FirebaseAuth mAuth;
 
+    DocumentSnapshot lastVisible;
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -44,8 +49,8 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         mAuth = FirebaseAuth.getInstance();
-        addControls(view, container);
-        addEvents();
+            addControls(view, container);
+            addEvents(container);
         // Inflate the layout for this fragment
         return view;
     }
@@ -59,21 +64,62 @@ public class HomeFragment extends Fragment {
         rycListPost.setAdapter(postAdapter);
     }
 
-    private void addEvents() {
-        if(mAuth.getCurrentUser() != null) {
-            db.collection("Post")
-                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                        @Override
-                        public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                            for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
-                                if (doc.getType() == DocumentChange.Type.ADDED) {
-                                    Post post = doc.getDocument().toObject(Post.class);
-                                    lsPost.add(post);
-                                    postAdapter.notifyDataSetChanged();
-                                }
-                            }
+    private void addEvents(final ViewGroup container) {
+
+        rycListPost.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(!recyclerView.canScrollVertically(1)) {
+
+                    String desc = lastVisible.getString("description");
+                    Toast.makeText(container.getContext(), "reached: " + desc, Toast.LENGTH_LONG).show();
+                    loadMorePost();
+                }
+            }
+        });
+
+        Query firstQuery = db.collection("Post").orderBy("timestamp", Query.Direction.DESCENDING).limit(3);
+
+        firstQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                if (!documentSnapshots.isEmpty()) {
+                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+
+                    for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                        if (doc.getType() == DocumentChange.Type.ADDED) {
+                            Post post = doc.getDocument().toObject(Post.class);
+                            lsPost.add(post);
+                            postAdapter.notifyDataSetChanged();
                         }
-                    });
-        }
+                    }
+                }
+            }
+        });
+
+    }
+
+    public  void loadMorePost(){
+        Query nextQuery = db.collection("Post")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .startAfter(lastVisible)
+                .limit(3);
+        nextQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                if (!documentSnapshots.isEmpty()) {
+                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+
+                    for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                        if (doc.getType() == DocumentChange.Type.ADDED) {
+                            Post post = doc.getDocument().toObject(Post.class);
+                            lsPost.add(post);
+                            postAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+        });
     }
 }
