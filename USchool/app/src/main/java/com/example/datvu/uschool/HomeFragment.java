@@ -37,6 +37,8 @@ public class HomeFragment extends Fragment {
     PostAdapter postAdapter;
     FirebaseAuth mAuth;
 
+    Boolean isFirstPageFirstLoad = true;
+
     DocumentSnapshot lastVisible;
 
     public HomeFragment() {
@@ -71,9 +73,6 @@ public class HomeFragment extends Fragment {
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
                 if(!recyclerView.canScrollVertically(1)) {
-
-                    String desc = lastVisible.getString("description");
-                    Toast.makeText(container.getContext(), "reached: " + desc, Toast.LENGTH_LONG).show();
                     loadMorePost();
                 }
             }
@@ -81,23 +80,48 @@ public class HomeFragment extends Fragment {
 
         Query firstQuery = db.collection("Post").orderBy("timestamp", Query.Direction.DESCENDING).limit(3);
 
-        firstQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        firstQuery.addSnapshotListener(getActivity(),new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                 if (!documentSnapshots.isEmpty()) {
-                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+                    if (isFirstPageFirstLoad) {
 
+                        lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+                        lsPost.clear();
+
+                    }
+                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
                     for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
                         if (doc.getType() == DocumentChange.Type.ADDED) {
-                            Post post = doc.getDocument().toObject(Post.class);
-                            lsPost.add(post);
+                            final String postId = doc.getDocument().getId();
+                            final Post post = doc.getDocument().toObject(Post.class).setId(postId);
+
+                            db.collection("Post/"+postId+"/like")
+                                    .document(mAuth.getCurrentUser().getUid())
+                                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+                                            if(documentSnapshot.exists()){
+                                                post.setLike(true);
+                                            }
+                                            else {
+                                                post.setLike(false);
+                                            }
+                                        }
+                                    });
+
+                            if (isFirstPageFirstLoad) {
+                                lsPost.add(post);
+                            } else {
+                                lsPost.add(0, post);
+                            }
                             postAdapter.notifyDataSetChanged();
                         }
                     }
                 }
+                isFirstPageFirstLoad = false;
             }
         });
-
     }
 
     public  void loadMorePost(){
@@ -105,7 +129,7 @@ public class HomeFragment extends Fragment {
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .startAfter(lastVisible)
                 .limit(3);
-        nextQuery.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        nextQuery.addSnapshotListener(getActivity(),new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                 if (!documentSnapshots.isEmpty()) {
@@ -113,10 +137,28 @@ public class HomeFragment extends Fragment {
 
                     for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
                         if (doc.getType() == DocumentChange.Type.ADDED) {
-                            Post post = doc.getDocument().toObject(Post.class);
+                            final String postId = doc.getDocument().getId();
+                            final Post post = doc.getDocument().toObject(Post.class).setId(postId);
+
+                            db.collection("Post/"+postId+"/like")
+                                    .document(mAuth.getCurrentUser().getUid())
+                                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+                                            if(documentSnapshot.exists()){
+                                                post.setLike(true);
+                                            }
+                                            else {
+                                                post.setLike(false);
+                                            }
+                                        }
+                                    });
+
                             lsPost.add(post);
                             postAdapter.notifyDataSetChanged();
                         }
+
+
                     }
                 }
             }

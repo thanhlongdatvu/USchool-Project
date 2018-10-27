@@ -54,15 +54,17 @@ public class MainActivity extends AppCompatActivity {
         mainbottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.mainContainer);
+
                 switch (item.getItemId()){
                     case R.id.bottomActionHome :
-                        replaceFragment(homeFragment);
+                        replaceFragment(homeFragment,currentFragment);
                         return true;
                     case R.id.bottomActionNotification :
-                        replaceFragment(notificationFragment);
+                        replaceFragment(notificationFragment,currentFragment);
                         return true;
                     case R.id.bottomActionAccount :
-                        replaceFragment(accountFragment);
+                        replaceFragment(accountFragment,currentFragment);
                         return true;
                 }
                 return false;
@@ -79,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         homeFragment = new HomeFragment();
         notificationFragment = new NotificationFragment();
         accountFragment = new AccountFragment();
-        replaceFragment(homeFragment);
+        initializeFragment();
     }
 
     @Override
@@ -123,9 +125,42 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void replaceFragment(Fragment fragment){
+    private void replaceFragment(Fragment fragment, Fragment currentFragment){
+
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.mainContainer,fragment);
+        if(fragment == homeFragment){
+            fragmentTransaction.hide(accountFragment);
+            fragmentTransaction.hide(notificationFragment);
+        }
+
+        if(fragment == accountFragment){
+            fragmentTransaction.hide(homeFragment);
+            fragmentTransaction.hide(notificationFragment);
+        }
+
+        if(fragment == notificationFragment){
+            fragmentTransaction.hide(homeFragment);
+            fragmentTransaction.hide(accountFragment);
+        }
+        fragmentTransaction.show(fragment);
+
         fragmentTransaction.commit();
+
+    }
+
+
+    private void initializeFragment(){
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+
+        fragmentTransaction.add(R.id.mainContainer, homeFragment);
+        fragmentTransaction.add(R.id.mainContainer, notificationFragment);
+        fragmentTransaction.add(R.id.mainContainer, accountFragment);
+
+        fragmentTransaction.hide(notificationFragment);
+        fragmentTransaction.hide(accountFragment);
+
+        fragmentTransaction.commit();
+
     }
 }

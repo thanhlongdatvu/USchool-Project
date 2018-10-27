@@ -3,7 +3,7 @@ package com.example.datvu.model;
 import java.sql.Timestamp;
 import java.util.Date;
 
-public class Post {
+public class Post extends PostId{
     private String image;
     private String imageCompress;
     private String description;

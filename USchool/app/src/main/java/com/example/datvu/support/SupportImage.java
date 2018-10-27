@@ -19,8 +19,8 @@ public class SupportImage {
         try {
 
             compressedImageFile = new Compressor(context)
-                    .setMaxHeight(100)
-                    .setMaxWidth(100)
+                    .setMaxHeight(200)
+                    .setMaxWidth(200)
                     .setQuality(1)
                     .compressToBitmap(newImageFile);
 
