@@ -2,6 +2,7 @@ package com.example.datvu.uschool;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +13,9 @@ import android.widget.Toast;
 
 import com.example.datvu.adapter.PostAdapter;
 import com.example.datvu.model.Post;
+import com.example.datvu.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -51,8 +55,8 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         mAuth = FirebaseAuth.getInstance();
-            addControls(view, container);
-            addEvents(container);
+        addControls(view, container);
+        addEvents();
         // Inflate the layout for this fragment
         return view;
     }
@@ -66,13 +70,13 @@ public class HomeFragment extends Fragment {
         rycListPost.setAdapter(postAdapter);
     }
 
-    private void addEvents(final ViewGroup container) {
+    private void addEvents() {
 
         rycListPost.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if(!recyclerView.canScrollVertically(1)) {
+                if (!recyclerView.canScrollVertically(1)) {
                     loadMorePost();
                 }
             }
@@ -80,35 +84,21 @@ public class HomeFragment extends Fragment {
 
         Query firstQuery = db.collection("Post").orderBy("timestamp", Query.Direction.DESCENDING).limit(3);
 
-        firstQuery.addSnapshotListener(getActivity(),new EventListener<QuerySnapshot>() {
+        firstQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                 if (!documentSnapshots.isEmpty()) {
                     if (isFirstPageFirstLoad) {
-
                         lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
                         lsPost.clear();
-
                     }
-                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+
                     for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
                         if (doc.getType() == DocumentChange.Type.ADDED) {
-                            final String postId = doc.getDocument().getId();
-                            final Post post = doc.getDocument().toObject(Post.class).setId(postId);
+                            String postId = doc.getDocument().getId();
+                            Post post = doc.getDocument().toObject(Post.class).setId(postId);
 
-                            db.collection("Post/"+postId+"/like")
-                                    .document(mAuth.getCurrentUser().getUid())
-                                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
-                                            if(documentSnapshot.exists()){
-                                                post.setLike(true);
-                                            }
-                                            else {
-                                                post.setLike(false);
-                                            }
-                                        }
-                                    });
+                            //setlike(post, postId);
 
                             if (isFirstPageFirstLoad) {
                                 lsPost.add(post);
@@ -116,52 +106,55 @@ public class HomeFragment extends Fragment {
                                 lsPost.add(0, post);
                             }
                             postAdapter.notifyDataSetChanged();
+
                         }
                     }
+                    isFirstPageFirstLoad = false;
                 }
-                isFirstPageFirstLoad = false;
             }
         });
     }
 
-    public  void loadMorePost(){
-        Query nextQuery = db.collection("Post")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .startAfter(lastVisible)
-                .limit(3);
-        nextQuery.addSnapshotListener(getActivity(),new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                if (!documentSnapshots.isEmpty()) {
-                    lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
+    public void loadMorePost() {
+        if(mAuth.getCurrentUser() != null) {
+            Query nextQuery = db.collection("Post")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .startAfter(lastVisible)
+                    .limit(3);
+            nextQuery.addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                    if (!documentSnapshots.isEmpty()) {
+                        lastVisible = documentSnapshots.getDocuments().get(documentSnapshots.size() - 1);
 
-                    for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
-                        if (doc.getType() == DocumentChange.Type.ADDED) {
-                            final String postId = doc.getDocument().getId();
-                            final Post post = doc.getDocument().toObject(Post.class).setId(postId);
+                        for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                            if (doc.getType() == DocumentChange.Type.ADDED) {
+                                final String postId = doc.getDocument().getId();
+                                final Post post = doc.getDocument().toObject(Post.class).setId(postId);
+                                //setlike(post, postId);
+                                lsPost.add(post);
+                                postAdapter.notifyDataSetChanged();
 
-                            db.collection("Post/"+postId+"/like")
-                                    .document(mAuth.getCurrentUser().getUid())
-                                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
-                                            if(documentSnapshot.exists()){
-                                                post.setLike(true);
-                                            }
-                                            else {
-                                                post.setLike(false);
-                                            }
-                                        }
-                                    });
-
-                            lsPost.add(post);
-                            postAdapter.notifyDataSetChanged();
+                            }
                         }
-
-
                     }
                 }
-            }
-        });
+            });
+        }
+    }
+
+    private void setlike(final Post post, String postId) {
+        db.collection("Post/" + postId + "/like")
+                .document(mAuth.getCurrentUser().getUid())
+                .addSnapshotListener(getActivity(), new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+                        if (documentSnapshot.exists()) {
+                            post.setLike(true);
+                        } else {
+                            post.setLike(false);
+                        }
+                    }
+                });
     }
 }

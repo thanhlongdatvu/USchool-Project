@@ -3,14 +3,15 @@ package com.example.datvu.model;
 public class PostId {
     String id;
     boolean like;
+    String finish;
 
     public String getId() {
         return id;
     }
 
-    public Post setId(String id) {
+    public <T extends PostId> T setId(String id) {
         this.id = id;
-        return (Post)this;
+        return (T)this;
     }
 
     public boolean isLike() {
@@ -19,5 +20,13 @@ public class PostId {
 
     public void setLike(boolean like) {
         this.like = like;
+    }
+
+    public String getFinish() {
+        return finish;
+    }
+
+    public void setFinish(String finish) {
+        this.finish = finish;
     }
 }

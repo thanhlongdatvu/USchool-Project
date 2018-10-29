@@ -9,16 +9,20 @@ public class Post extends PostId{
     private String description;
     private Date timestamp;
     private String userID;
+    private String username;
+    private String imgUser;
 
     public Post() {
     }
 
-    public Post(String image, String imageCompress, String description, Date timestamp, String userID) {
+    public Post(String image, String imageCompress, String description, Date timestamp, String userID, String username, String imgUser) {
         this.image = image;
         this.imageCompress = imageCompress;
         this.description = description;
         this.timestamp = timestamp;
         this.userID = userID;
+        this.username = username;
+        this.imgUser = imgUser;
     }
 
     public String getImage() {
@@ -59,5 +63,21 @@ public class Post extends PostId{
 
     public void setUserID(String userID) {
         this.userID = userID;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getImgUser() {
+        return imgUser;
+    }
+
+    public void setImgUser(String imgUser) {
+        this.imgUser = imgUser;
     }
 }

@@ -20,14 +20,13 @@
     <ImageView
         android:id="@+id/postImage"
         android:layout_width="0dp"
-        android:layout_height="256dp"
-        android:background="@drawable/custom_view"
+        android:layout_height="225dp"
         android:scaleType="centerCrop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/postToolbar"
-        app:srcCompat="@drawable/camera" />
+        app:srcCompat="@android:color/darker_gray" />
 
     <ProgressBar
         android:id="@+id/postProgess"

@@ -21,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.datvu.model.Post;
+import com.example.datvu.model.User;
 import com.example.datvu.support.SupportImage;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -28,6 +29,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -59,6 +61,7 @@ public class PostActivity extends AppCompatActivity {
     StorageReference mStorageRef;
     FirebaseAuth mAuth;
     FirebaseFirestore db;
+    final Map<String, Object> postMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +76,20 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void addEvents() {
+
+        db.collection("User")
+                .document(userID).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()){
+                            User user = task.getResult().toObject(User.class);
+                            postMap.put("username",user.getLastName() + " " + user.getFirstName());
+                            postMap.put("imgUser",user.getImage());
+                        }
+                    }
+                });
+
         postImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,7 +142,6 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void taoThongTinBaiDang(Uri downloadUrl, Uri downloadcompressUrl) {
-        Map<String, Object> postMap = new HashMap<>();
         postMap.put("image",downloadUrl.toString());
         postMap.put("imageCompress",downloadcompressUrl.toString());
         postMap.put("description",txtPost.getText().toString());
