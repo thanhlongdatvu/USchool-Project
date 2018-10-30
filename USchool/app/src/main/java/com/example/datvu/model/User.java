@@ -1,6 +1,6 @@
 package com.example.datvu.model;
 
-public class User {
+public class User extends PostId {
     private String firstName;
     private String lastName;
     private String phone;

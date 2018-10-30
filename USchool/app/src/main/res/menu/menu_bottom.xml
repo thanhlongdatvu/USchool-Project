@@ -6,9 +6,9 @@
         android:id="@+id/bottomActionHome"
         android:icon="@drawable/home" />
     <item
-        android:id="@+id/bottomActionAccount"
+        android:id="@+id/bottomActionNotification"
         android:icon="@drawable/notification" />
     <item
-        android:id="@+id/bottomActionNotification"
+        android:id="@+id/bottomActionAccount"
         android:icon="@drawable/account" />
 </menu>
