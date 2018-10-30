@@ -61,7 +61,6 @@ public class CommentsActivity extends AppCompatActivity {
         imgSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 final String commetMessage = txtComment.getText().toString();
 
                 db.collection("User")
@@ -86,6 +85,7 @@ public class CommentsActivity extends AppCompatActivity {
                                                                     "Lỗi bình luận: "+task.getException().toString(),
                                                                     Toast.LENGTH_LONG).show();
                                                         }
+                                                        txtComment.setText("");
                                                     }
                                                 });
                                     }

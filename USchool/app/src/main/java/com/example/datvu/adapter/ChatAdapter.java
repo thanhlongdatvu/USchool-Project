@@ -16,6 +16,7 @@ import java.util.List;
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     List<Chat> lsChat;
     FirebaseAuth mAuth;
+    String userIDCurrent;
 
     public ChatAdapter(List<Chat> lsChat) {
         this.lsChat = lsChat;
@@ -26,20 +27,22 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_chat_item,parent,false);
         mAuth = FirebaseAuth.getInstance();
+        userIDCurrent = mAuth.getUid();
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String userIDCurrent = mAuth.getUid();
 
         Chat chat = lsChat.get(position);
         if(chat.getUserID().equals(userIDCurrent)){
-           holder.txtSend.setText(chat.getMessage());
-            holder.txtReceive.setVisibility(View.INVISIBLE);
+          holder.txtSend.setVisibility(View.VISIBLE);
+          holder.txtReceive.setVisibility(View.INVISIBLE);
+          holder.txtSend.setText(chat.getMessage());
         }else{
-            holder.txtReceive.setText(chat.getMessage());
+            holder.txtReceive.setVisibility(View.VISIBLE);
             holder.txtSend.setVisibility(View.INVISIBLE);
+            holder.txtReceive.setText(chat.getMessage());
         }
     }
 
@@ -55,8 +58,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         public ViewHolder(View itemView) {
             super(itemView);
             view = itemView;
-            txtReceive = view.findViewById(R.id.txtReceive);
             txtSend = view.findViewById(R.id.txtSend);
+            txtReceive = view.findViewById(R.id.txtReceive);
         }
     }
 }
