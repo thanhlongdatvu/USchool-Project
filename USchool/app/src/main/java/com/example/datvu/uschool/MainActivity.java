@@ -9,13 +9,19 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 
 public class MainActivity extends AppCompatActivity {
     Toolbar mainToolBar;
@@ -27,7 +33,9 @@ public class MainActivity extends AppCompatActivity {
     AccountFragment accountFragment;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
+    boolean begin = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mAuth =FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         if(mAuth.getCurrentUser() != null) {
             addControls();
@@ -82,6 +91,20 @@ public class MainActivity extends AppCompatActivity {
         notificationFragment = new NotificationFragment();
         accountFragment = new AccountFragment();
         initializeFragment();
+
+        if(begin == true){
+            db.collection("User").document(mAuth.getCurrentUser().getUid()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    String postition = task.getResult().getString("position");
+                    if(TextUtils.isEmpty(postition)){
+                        btnfaPost.setEnabled(false);
+                        btnfaPost.setVisibility(View.INVISIBLE);
+                    }
+                }
+            });
+            begin = false;
+        }
     }
 
     @Override

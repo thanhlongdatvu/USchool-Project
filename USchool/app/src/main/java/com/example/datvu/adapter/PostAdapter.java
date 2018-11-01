@@ -83,7 +83,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
         setCountLike(holder, postID);
 
-        setCountDocument(holder, postID);
+        setCountComment(holder, postID);
 
         likeReadTime(holder, postID, userIdCurrent);
 
@@ -107,7 +107,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         });
     }
 
-    private void setCountDocument(final ViewHolder holder, String postID) {
+    private void setCountComment(final ViewHolder holder, String postID) {
         db.collection("Post/" + postID + "/Comment").addSnapshotListener((Activity)context,new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {

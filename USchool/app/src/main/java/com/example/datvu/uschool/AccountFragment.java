@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,8 +63,9 @@ public class AccountFragment extends Fragment {
                if (!documentSnapshots.isEmpty()) {
                    for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
                        String userID = doc.getDocument().getId();
+                       String position = doc.getDocument().getString("position");
                         User user = doc.getDocument().toObject(User.class).setId(userID);
-                       if(!userID.equals(userIDCurrent)) {
+                       if(!userID.equals(userIDCurrent) && !TextUtils.isEmpty(position)) {
                            lsUsers.add(user);
                            adapterUser.notifyDataSetChanged();
                        }

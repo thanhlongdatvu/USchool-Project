@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -27,8 +28,12 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -49,6 +54,7 @@ public class SetupActivity extends AppCompatActivity {
     Button btnSave;
     ProgressBar setupProgess;
     EditText txtLastName,txtFirstName,txtPhone;
+    TextView textView;
 
     boolean isChange = false;
     String userID;
@@ -110,11 +116,11 @@ public class SetupActivity extends AppCompatActivity {
         });
     }
 
-    private void capNhatThongTin(String downloadUrl)
+    private void capNhatThongTin(final String downloadUrl)
     {
-        String firstname =txtFirstName.getText().toString();
+        final String firstname =txtFirstName.getText().toString();
         String phone =txtPhone.getText().toString();
-        String lastname =txtLastName.getText().toString();
+        final String lastname =txtLastName.getText().toString();
         if(!TextUtils.isEmpty(firstname) && !TextUtils.isEmpty(lastname) && !TextUtils.isEmpty(phone)){
             if (KiemTra.KiemTraPhone(phone)) {
                 Map<String, String> user = new HashMap<>();
@@ -122,6 +128,7 @@ public class SetupActivity extends AppCompatActivity {
                 user.put("lastName", lastname);
                 user.put("phone", phone);
                 user.put("image", downloadUrl);
+                user.put("position",textView.getText().toString());
                 db.collection("User")
                         .document(userID)
                         .set(user)
@@ -129,13 +136,29 @@ public class SetupActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
-                                    Toast.makeText(SetupActivity.this, "Cập nhật thành công"
-                                            , Toast.LENGTH_SHORT).show();
-                                    setupProgess.setVisibility(View.INVISIBLE);
-                                    btnSave.setEnabled(true);
-                                    Intent intent = new Intent(SetupActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
+                                    db.collection("Post").addSnapshotListener(SetupActivity.this, new EventListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
+                                            for(DocumentChange doc:documentSnapshots.getDocumentChanges()){
+                                                String userIDPost = doc.getDocument().getString("userID");
+                                                String idPost = doc.getDocument().getId();
+                                                Map<String, Object> updateMap = new HashMap<>();
+                                                updateMap.put("username", lastname +" "+ firstname);
+                                                updateMap.put("imgUser",downloadUrl);
+                                                if(userIDPost.equals(userID)){
+                                                    db.collection("Post").document(idPost).update(updateMap);
+                                                }
+                                            }
+                                            Toast.makeText(SetupActivity.this, "Cập nhật thành công"
+                                                    , Toast.LENGTH_SHORT).show();
+
+                                            setupProgess.setVisibility(View.INVISIBLE);
+                                            btnSave.setEnabled(true);
+                                            Intent intent = new Intent(SetupActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+                                    });
                                 }
                             }
                         });
@@ -184,6 +207,7 @@ public class SetupActivity extends AppCompatActivity {
     }
 
     private void addControls() {
+        textView = findViewById(R.id.textView);
         setupImage = findViewById(R.id.setupImage);
         setupToolBar = findViewById(R.id.setupToolBar);
         btnSave = findViewById(R.id.btnSave);
@@ -210,10 +234,12 @@ public class SetupActivity extends AppCompatActivity {
                                 String  firstName= task.getResult().getString("firstName");
                                 String phone = task.getResult().getString("phone");
                                 String image = task.getResult().getString("image");
+                                String position = task.getResult().getString("position");
 
                                 txtFirstName.setText(firstName);
                                 txtLastName.setText(lastName);
                                 txtPhone.setText(phone);
+                                textView.setText(position);
                                 if(!TextUtils.isEmpty(image)) {
                                     imageUri = Uri.parse(image);
                                     Glide.with(SetupActivity.this).load(image).into(setupImage);
