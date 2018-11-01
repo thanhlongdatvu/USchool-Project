@@ -1,5 +1,6 @@
 package com.example.datvu.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -107,7 +108,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     }
 
     private void setCountDocument(final ViewHolder holder, String postID) {
-        db.collection("Post/" + postID + "/Comment").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        db.collection("Post/" + postID + "/Comment").addSnapshotListener((Activity)context,new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                 if (documentSnapshots.isEmpty()) {
@@ -122,7 +123,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
 
 
     private void setCountLike(final ViewHolder holder, String postID) {
-        db.collection("Post/" + postID + "/like").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        db.collection("Post/" + postID + "/like").addSnapshotListener((Activity)context,new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                 if (documentSnapshots.isEmpty()) {
@@ -136,7 +137,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     }
 
     private void likeReadTime(final ViewHolder holder, String postID, String userIdCurrent) {
-        db.collection("Post/" + postID + "/like").document(userIdCurrent).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        db.collection("Post/" + postID + "/like").document(userIdCurrent).addSnapshotListener((Activity)context,new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
                 if (documentSnapshot.exists()) {

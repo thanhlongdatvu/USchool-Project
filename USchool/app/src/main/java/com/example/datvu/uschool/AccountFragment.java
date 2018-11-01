@@ -56,7 +56,7 @@ public class AccountFragment extends Fragment {
     }
 
     private void addEvents() {
-       db.collection("User").addSnapshotListener(new EventListener<QuerySnapshot>() {
+       db.collection("User").addSnapshotListener(getActivity(),new EventListener<QuerySnapshot>() {
            @Override
            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
                if (!documentSnapshots.isEmpty()) {

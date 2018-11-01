@@ -110,6 +110,10 @@ public class MainActivity extends AppCompatActivity {
                 Intent settingsIntent = new Intent(MainActivity.this, SetupActivity.class);
                 startActivity(settingsIntent);
                 return true;
+            case R.id.actionSchedule:
+                Intent scheduleIntent = new Intent(MainActivity.this, ScheduleActivity.class);
+                startActivity(scheduleIntent);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
